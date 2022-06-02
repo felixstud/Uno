@@ -1,0 +1,28 @@
+﻿<Page x:Name="RegistrationPage" x:Class="Uno.Registration_Page"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Uno"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Registration_Page"
+      Background="White">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="txtName" Text="Name: " Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,10,0,0"/>
+        <TextBox x:Name="inputName" Text="Please enter your name..." Width="150" Grid.Column="2" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,10,10,10"/>
+        <Button x:Name="btnToStartScreen" Click="btnToStartScreen_Click" Content="Back to Start Screen" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Height="30" Width="120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,20,20,20"/>
+        <Button x:Name="btnNewGame" Content="Start new Game" Grid.Column="2" Grid.Row="2" Height="30" Width="100" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20,20,20,20"/>
+    </Grid>
+</Page>
