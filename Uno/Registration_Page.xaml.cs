@@ -29,5 +29,10 @@ namespace Uno
         {
             this.NavigationService.Navigate(new Start_Screen());
         }
+
+        private void inputName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            
+        }
     }
 }

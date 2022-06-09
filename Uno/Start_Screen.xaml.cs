@@ -29,5 +29,10 @@ namespace Uno
         {
             this.NavigationService.Navigate(new Registration_Page());
         }
+
+        private void btn_exit_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
     }
 }
