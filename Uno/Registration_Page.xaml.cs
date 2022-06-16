@@ -34,5 +34,10 @@ namespace Uno
         {
             
         }
+
+        private void btnNewGame_Click(object sender, RoutedEventArgs e)
+        {
+            this.NavigationService.Navigate(new Waiting_Page());
+        }
     }
 }
