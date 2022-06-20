@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Dummy": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\Felix Bauer\\Documents\\Visual Studio 2022\\Projects\\Uno_Projekt\\Uno\\Uno"
+    }
+  }
+}

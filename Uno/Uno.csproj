@@ -5,14 +5,17 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Classes\" />
     <Folder Include="images\" />
+    <Folder Include="Testcodes\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimpleTCP" Version="1.0.24" />
+    <PackageReference Include="SuperSimpleTcp" Version="2.6.0.8" />
   </ItemGroup>
 
 </Project>
