@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using SuperSimpleTcp;
+using Uno.Classes;
 
 namespace Uno
 {
@@ -32,108 +32,26 @@ namespace Uno
             InitializeComponent();
         }
 
-        public SimpleTcpServer server;
-        public SimpleTcpClient client;
-        public bool host;
-
-        private string IP_Port = "127.0.0.1:8000";
-        private uint playercount = 1;
-
-        private bool find_server()          //ToDo
-        {
-            client = new SimpleTcpClient(IP_Port);
-            try
-            { client.Connect(); }
-            catch
-            { return false; }
-
-            if (!client.IsConnected)
-                return false;
-            client.Events.DataReceived += Events_DataReceived_Client;
-            client.Events.Disconnected += Events_Disconnected;
-            return true;
-        }
-
-        private void Events_Disconnected(object? sender, ConnectionEventArgs e)
-        {
-            update_status("Disconnected from Server.");
-            this.new_Connection();
-        }
-
-        private void Events_DataReceived_Client(object? sender, DataReceivedEventArgs e)
-        {
-            update_playercount(Encoding.UTF8.GetString(e.Data));
-        }
-
-        private bool create_server()
-        {
-            server = new SimpleTcpServer(IP_Port);
-
-            server.Events.ClientConnected += Events_ClientConnected;
-            server.Events.ClientDisconnected += Events_ClientDisconnected;
-            server.Events.DataReceived += Events_DataReceived_Server;
-
-            try
-            {
-                server.Start();
-            }
-            catch
-            {
-                update_status("Server could not be started. Please try again.");
-                return false;
-            }
-            update_status("Server started");
-            update_playercount(playercount.ToString());
-            return true;
-        }
-
-        private void Events_DataReceived_Server(object? sender, DataReceivedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void Events_ClientDisconnected(object? sender, ConnectionEventArgs e)
-        {
-            playercount = (uint)server.GetClients().ToList().Count() + 1;
-            update_playercount(playercount.ToString());
-            update_status("Player disconnected! Total Players: ");
-        }
-
-        private void Events_ClientConnected(object? sender, ConnectionEventArgs e)
-        {
-            playercount = (uint)server.GetClients().ToList().Count() + 1;
-            update_playercount(playercount.ToString());
-            update_status("New Player connected! Total Players: ");
-            server.Send(e.IpPort, playercount.ToString());
-        }
-
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            new_Connection();
+            Globals.network.ConnectionCounterChanged += Network_ConnectionCounterChanged;
+            Globals.network.StatusChanged += Network_StatusChanged;
+            Globals.network.new_Connection();
         }
 
-        private void new_Connection()
+        private void Network_StatusChanged(object sender, StatusChangedEventArgs e)
         {
-            if (this.find_server())
-            {
-                update_status("Connected to Server!");
-                host = false;
-            }
-            else
-            {
-                update_status("No server available. Starting Server...");
-                host = this.create_server();
-            }
+            update_status(e.Status);
+        }
+
+        private void Network_ConnectionCounterChanged(object sender, ConnectionCounterChangedEventArgs e)
+        {
+            this.update_playercount(e.counter.ToString());
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            if(server != null)
-                if (server.IsListening)
-                    server.Stop();
-            if(client != null)
-                if (client.IsConnected)
-                    client.Disconnect();
+        {   
+            Globals.network.Stop();
             this.NavigationService.Navigate(new Registration_Page());
         }
 
