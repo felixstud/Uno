@@ -40,7 +40,7 @@ namespace Uno.Classes
             {
                 foreach(Player player in Players)
                 {
-                    if (player.Name == name)
+                    if (string.Equals(player.Name, name))
                         name += "!";
                 }
             }
