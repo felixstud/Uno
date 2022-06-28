@@ -8,8 +8,8 @@ namespace Uno.Classes
 {
     public static class Globals
     {
-        public static int players { get; }
         public static Networking network = new Networking();
         public static List<Player> Players;
+        public static string myName;
     }
 }

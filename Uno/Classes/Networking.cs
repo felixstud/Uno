@@ -40,8 +40,8 @@ namespace Uno.Classes
             if (!client.IsConnected)
                 return false;
             client.Events.DataReceived += Events_DataReceived_Client;
-            client.Events.Disconnected += Events_ClientDisconnected;
-            client.Events.Connected += Events_ClientConnected;
+            client.Events.Disconnected += Events_Disconnected;
+            client.Events.Connected += Events_Connected;
             return true;
         }
 
@@ -49,10 +49,23 @@ namespace Uno.Classes
         {
             StatusChanged(this, new StatusChangedEventArgs("Disconnected from Server. Please try again."));
         }
-
-        private void Events_DataReceived_Client(object? sender, DataReceivedEventArgs e)            //ToDo
+        private void Events_Connected(object? sender, ConnectionEventArgs e)
         {
-            //Get Connected Players
+            StatusChanged(this, new StatusChangedEventArgs("Connected to Server: " + e.IpPort));
+        }
+
+        private void Events_DataReceived_Client(object? sender, DataReceivedEventArgs e)
+        {
+            string msg = Encoding.UTF8.GetString(e.Data);
+            if (msg.Contains("!counter!"))
+            {
+                ConnectionCounterChanged(this, new ConnectionCounterChangedEventArgs(Int32.Parse(msg.Remove(0,9))));
+            }
+            else if (msg.Contains("?name?"))
+            {
+                client.Send("!name!" + Globals.myName);
+                StatusChanged(this, new StatusChangedEventArgs("Connected to Server: " + e.IpPort));
+            }
         }
 
         private bool create_server()
@@ -80,10 +93,13 @@ namespace Uno.Classes
 
         private void Events_DataReceived_Server(object? sender, DataReceivedEventArgs e)            //ToDo
         {
-            //Get Names of Connected Player
-            //Save Names in Array
-            //Change Name if it's a duplicate of already connected Players
-            throw new NotImplementedException();
+            string msg = Encoding.UTF8.GetString(e.Data);
+            if (msg.Contains("!name!"))
+            { 
+                //Globals.Players.Add(new Player(e.IpPort.ToString(), msg.Remove(0,6)));
+                StatusChanged(this, new StatusChangedEventArgs("New Players name: " + msg.Remove(0, 6))); 
+                serverBroadcast("!counter!" + connectionCounter.ToString());
+            }
         }
 
         private void Events_ClientDisconnected(object? sender, ConnectionEventArgs e)
@@ -91,10 +107,12 @@ namespace Uno.Classes
             connectionCounter--;
             ConnectionCounterChanged(this, new ConnectionCounterChangedEventArgs(connectionCounter));
             StatusChanged(this, new StatusChangedEventArgs("Client Disconnected"));
+            serverBroadcast("!counter!" + connectionCounter.ToString());
         }
 
         private void Events_ClientConnected(object? sender, ConnectionEventArgs e)
         {
+            server.Send(e.IpPort, "?name?");
             connectionCounter++;
             ConnectionCounterChanged(this, new ConnectionCounterChangedEventArgs(connectionCounter));
             StatusChanged(this, new StatusChangedEventArgs("New Client Connected"));
@@ -140,6 +158,12 @@ namespace Uno.Classes
         {
             StatusChangedEventHandler handler = StatusChanged;
             handler?.Invoke(this, e);
+        }
+
+        private void serverBroadcast(string msg)
+        {
+            IEnumerable<string> clients = server.GetClients();
+            foreach (string client in clients) server.Send(client, msg);
         }
 
     }
