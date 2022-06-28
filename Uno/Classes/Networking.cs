@@ -85,6 +85,7 @@ namespace Uno.Classes
                 StatusChanged(this, new StatusChangedEventArgs("Error starting Server. Please try again."));
                 return false;
             }
+            Globals.addPlayer(Globals.myName, "host");
             connectionCounter++;
             ConnectionCounterChanged(this, new ConnectionCounterChangedEventArgs(connectionCounter));
             StatusChanged(this, new StatusChangedEventArgs("Server started successfully"));
@@ -96,9 +97,10 @@ namespace Uno.Classes
             string msg = Encoding.UTF8.GetString(e.Data);
             if (msg.Contains("!name!"))
             {
-                Globals.addPlayer(msg.Remove(0, 6), e.IpPort);
-                //Globals.Players.Add(new Player(e.IpPort.ToString(), msg.Remove(0,6)));
-                StatusChanged(this, new StatusChangedEventArgs("New Players name: " + msg.Remove(0, 6))); 
+                string p_name = Globals.addPlayer(msg.Remove(0, 6), e.IpPort);
+                StatusChanged(this, new StatusChangedEventArgs("New Players name: " + p_name));
+                if (!p_name.Equals(msg.Remove(0, 6)));
+                    server.Send(e.IpPort, "!name!" + p_name);
                 serverBroadcast("!counter!" + connectionCounter.ToString());
             }
         }
