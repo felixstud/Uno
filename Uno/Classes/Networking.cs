@@ -95,7 +95,8 @@ namespace Uno.Classes
         {
             string msg = Encoding.UTF8.GetString(e.Data);
             if (msg.Contains("!name!"))
-            { 
+            {
+                Globals.addPlayer(msg.Remove(0, 6), e.IpPort);
                 //Globals.Players.Add(new Player(e.IpPort.ToString(), msg.Remove(0,6)));
                 StatusChanged(this, new StatusChangedEventArgs("New Players name: " + msg.Remove(0, 6))); 
                 serverBroadcast("!counter!" + connectionCounter.ToString());
