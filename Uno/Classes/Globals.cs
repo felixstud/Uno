@@ -17,11 +17,12 @@ namespace Uno.Classes
             Players = new List<Player>();
         }
 
-        public static void addPlayer(string name, string IpPort)
+        public static string addPlayer(string name, string IpPort)
         {
+            name = CheckDuplicateNames(name)
             Players.Add(new Player(name, IpPort));
+            return name;
         }
-
         public static void removePlayer(string IpPort)
         {
             foreach (Player player in Players)
@@ -32,6 +33,18 @@ namespace Uno.Classes
                     return;
                 }
             }
+        }
+        private static string CheckDuplicateNames(string name)
+        {
+            foreach(Player iter in Players)
+            {
+                foreach(Player player in Players)
+                {
+                    if (player.Name == name)
+                        name += "!";
+                }
+            }
+            return name;
         }
     }
 }
