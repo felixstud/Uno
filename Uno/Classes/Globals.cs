@@ -19,7 +19,7 @@ namespace Uno.Classes
 
         public static string addPlayer(string name, string IpPort)
         {
-            name = CheckDuplicateNames(name)
+            name = CheckDuplicateNames(name);
             Players.Add(new Player(name, IpPort));
             return name;
         }
