@@ -109,6 +109,7 @@ namespace Uno.Classes
             ConnectionCounterChanged(this, new ConnectionCounterChangedEventArgs(connectionCounter));
             StatusChanged(this, new StatusChangedEventArgs("Client Disconnected"));
             serverBroadcast("!counter!" + connectionCounter.ToString());
+            Globals.removePlayer(e.IpPort);
         }
 
         private void Events_ClientConnected(object? sender, ConnectionEventArgs e)
