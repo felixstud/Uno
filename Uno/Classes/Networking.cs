@@ -9,7 +9,7 @@ namespace Uno.Classes
 {
     public class Networking
     {
-        private SimpleTcpServer server;
+        public SimpleTcpServer server;
         private SimpleTcpClient client;
 
         private string IP_Port;
@@ -164,7 +164,7 @@ namespace Uno.Classes
             handler?.Invoke(this, e);
         }
 
-        private void serverBroadcast(string msg)
+        public void serverBroadcast(string msg)
         {
             IEnumerable<string> clients = server.GetClients();
             foreach (string client in clients) server.Send(client, msg);

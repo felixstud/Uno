@@ -11,6 +11,7 @@ namespace Uno.Classes
         public static Networking network = new Networking();
         public static List<Player> Players;
         public static string myName;
+        public static int MaxPlayers = 4;
 
         static Globals()
         {

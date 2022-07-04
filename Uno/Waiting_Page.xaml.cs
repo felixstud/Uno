@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Uno.Classes;
+using System.Threading;
 
 namespace Uno
 {
@@ -21,10 +22,7 @@ namespace Uno
     /// Interaktionslogik für Waiting_Page.xaml
     /// </summary>
     /// 
-    /*ToDo:
-    - Playercounter works instable
-    - Transferring Names to some kind of database
-     */
+
     public partial class Waiting_Page : Page
     {
         public Waiting_Page()
@@ -44,9 +42,15 @@ namespace Uno
             update_status(e.Status);
         }
 
-        private void Network_ConnectionCounterChanged(object sender, ConnectionCounterChangedEventArgs e)
+        private async void Network_ConnectionCounterChanged(object sender, ConnectionCounterChangedEventArgs e)
         {
             this.update_playercount(e.counter.ToString());
+            if(e.counter == Globals.MaxPlayers)
+            {
+                this.update_status( Globals.MaxPlayers.ToString() + " Players connected. Ready to Start the game.");
+                await Task.Delay(5000);
+                this.Dispatcher.BeginInvoke(new Action(() =>{this.NavigationService.Navigate(new Game_Page());}));
+            }
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -64,5 +68,6 @@ namespace Uno
         {
             txtStatus.Dispatcher.BeginInvoke(new Action(() => {txtStatus.Text = text;}));
         }
+
     }
 }
