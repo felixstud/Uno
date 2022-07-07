@@ -12,6 +12,7 @@ namespace Uno.Classes
         public static List<Player> Players;
         public static string myName;
         public static int MaxPlayers = 4;
+        public static Random randomNumber = new Random();
 
         static Globals()
         {
