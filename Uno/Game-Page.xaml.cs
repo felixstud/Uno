@@ -37,6 +37,7 @@ namespace Uno
 
         List<Label> CardLabels;
         CardStack AllCards;
+        CardStack MidStack;
 
         private void initializeLabels()
         {
@@ -74,6 +75,10 @@ namespace Uno
             this.AllCards.createAllCards();
             this.GetInitialCards();
             this.ShowOwnCards();
+
+            MidStack = new CardStack();
+            MidStack.AddCard(AllCards.getRandomCard());
+            ShowCard(MiddleStack, MidStack.Cards.Last());
         }
 
         private void ClientStartGame()
@@ -101,11 +106,24 @@ namespace Uno
             int i = 0;
             foreach (Card c in Globals.Players[0].CardStack.Cards)
             {
-                CardLabels[i].Content = c.number.ToString();
-                CardLabels[i].Background = lcolor[c.color];
-                CardLabels[i].Visibility = Visibility.Visible;
+                ShowCard(CardLabels[i], c);
                 i++;
             }
+            while(i < 15)
+            {
+                CardLabels[i].Visibility = Visibility.Hidden;
+                CardLabels[i].Content = null;
+                CardLabels[i].Background = null;
+                i++;
+            }
+        }
+
+        private void ShowCard(Label L, Card C)
+        {
+            var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
+            L.Content = C.number.ToString();
+            L.Background = lcolor[C.color];
+            L.Visibility = Visibility.Visible;
         }
 
         private void onCardClick(object sender, MouseButtonEventArgs e)
@@ -113,8 +131,40 @@ namespace Uno
             foreach (Label L in CardLabels)
             {
                 if (sender.Equals(L))
-                    L.Content = "YES";
+                {
+                    Card LabelCard = LabelToCard(L);
+                    //Move Card to middle Stack
+                    foreach (Card c in Globals.Players[0].CardStack.Cards)
+                    {
+                        if(c.Equals(LabelCard))
+                        {
+                            MidStack.AddCard(Globals.Players[0].CardStack.RemoveCard(c));
+                            ShowCard(MiddleStack, c);
+                            ShowOwnCards();
+                            return;
+                        }
+                    }
+                }
             }
+        }
+
+        private Card LabelToCard(Label L)
+        {
+            var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
+            for (int i = 0; i < 4; i++)
+            {
+                if (L.Background == lcolor[i])
+                {
+                    int n = Int32.Parse(L.Content.ToString());
+                    return new Card(n, i);
+                }
+            }
+            return null;
+        }
+
+        private void btn_newCard_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
