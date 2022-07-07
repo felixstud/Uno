@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Uno.Classes
 {
@@ -21,5 +22,7 @@ namespace Uno.Classes
         public string Name { get; set; }
         public string ip_port { get; set; }
         public CardStack CardStack;
+        public Label NameLabel;
+        public Label NumberLabel;
     }
 }

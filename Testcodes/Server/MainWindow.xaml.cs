@@ -41,7 +41,10 @@ namespace Server
             server.Events.DataReceived += Events_DataReceived;
 
             server.Start();
-            txtStatus.Text += "Server started..."; 
+            txtStatus.Text += "Server started...";
+
+            SimpleTcpClient client = new SimpleTcpClient("127.0.0.1:8000");
+            client.Connect();
         }
 
         private void Events_DataReceived(object? sender, DataReceivedEventArgs e)

@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Uno.Classes;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Uno
 {
@@ -21,6 +23,10 @@ namespace Uno
     /// </summary>
     public partial class Game_Page : Page
     {
+        List<Label> CardLabels;
+        List<Label> NameLabels;
+        List<Label> CountLabels;
+
         public Game_Page()
         {
             InitializeComponent();
@@ -29,15 +35,32 @@ namespace Uno
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             this.initializeLabels();
-            if (Globals.network.server != null)
-                this.serverStartGame();
-            else
-                this.ClientStartGame();
         }
 
-        List<Label> CardLabels;
-        CardStack AllCards;
-        CardStack MidStack;
+        private void init()
+        {
+            GameClient.Events.CardReceived += Events_CardReceived;
+            GameClient.Events.EnemyPlayerNameReceived += Events_EnemyPlayerNameReceived;
+
+            GameClient.RequestServer("?EnemyNames?");
+            while (NameLabels[Globals.MaxPlayers - 1] == null) ;
+            for(int i = 0; i < 7; i++)
+            {
+                GameClient.RequestServer("?card?");
+                while (GameClient.myCards.getCounter() != (i + 1)) ;
+            }
+            ShowOwnCards();
+        }
+
+        private void Events_EnemyPlayerNameReceived(object? sender, GameClient.EnemyNameReceivedEventArgs e)
+        {
+            NameLabels[e.Playernumber].Content = e.PlayerName;
+        }
+
+        private void Events_CardReceived(object? sender, GameClient.CardReceivedEventArgs e)
+        {
+            ShowOwnCards();
+        }
 
         private void initializeLabels()
         {
@@ -67,44 +90,23 @@ namespace Uno
                 L.FontSize = 20;
                 L.Margin = new Thickness(1);
             }
-        }
 
-        private void serverStartGame()
-        {
-            this.AllCards = new CardStack();
-            this.AllCards.createAllCards();
-            this.GetInitialCards();
-            this.ShowOwnCards();
+            NameLabels = new List<Label>();
+            NameLabels.Add(lab_Player1_Name);
+            NameLabels.Add(lab_Player2_Name);
+            NameLabels.Add(lab_Player3_Name);
 
-            MidStack = new CardStack();
-            MidStack.AddCard(AllCards.getRandomCard());
-            ShowCard(MiddleStack, MidStack.Cards.Last());
-        }
-
-        private void ClientStartGame()
-        {
-            //Get 7 Cards from Server and add to own local Cardstack
-            //Implement Card reception (Client RxData)
-        }
-
-        private void GetInitialCards()
-        {
-            for(int j = 0; j < Globals.MaxPlayers; j++)
-            {
-                for (int i = 0; i < 7; i++)
-                {
-                    Globals.Players[j].CardStack.AddCard(AllCards.getRandomCard());
-                    if (j != 0)  //Client Player
-                        Globals.network.server.Send(Globals.Players[j].ip_port, "!card!" + Globals.Players[j].CardStack.returnCard(i).color.ToString() + Globals.Players[j].CardStack.returnCard(i).number.ToString());
-                }
-            }
+            CountLabels = new List<Label>();
+            CountLabels.Add(lab_Player1_Number);
+            CountLabels.Add(lab_Player2_Number);
+            CountLabels.Add(lab_Player3_Number);
         }
 
         private void ShowOwnCards()
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
             int i = 0;
-            foreach (Card c in Globals.Players[0].CardStack.Cards)
+            foreach (Card c in GameClient.myCards.Cards)
             {
                 ShowCard(CardLabels[i], c);
                 i++;
@@ -134,19 +136,9 @@ namespace Uno
                 {
                     Card LabelCard = LabelToCard(L);
                     //Move Card to middle Stack
-                    foreach (Card c in Globals.Players[0].CardStack.Cards)
-                    {
-                        if(c.Equals(LabelCard))
-                        {
-                            MidStack.AddCard(Globals.Players[0].CardStack.RemoveCard(c));
-                            ShowCard(MiddleStack, c);
-                            ShowOwnCards();
-                            return;
-                        }
-                    }
                 }
             }
-        }
+        }//ToDo
 
         private Card LabelToCard(Label L)
         {
@@ -166,5 +158,15 @@ namespace Uno
         {
 
         }
+
+        private void btn_Exit_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Sure you want to Exit?", "Exit?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                GameServer.Stop();
+                GameClient.Stop();
+            }
+        }//ToDo
     }
 }
