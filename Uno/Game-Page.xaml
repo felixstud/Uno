@@ -6,9 +6,34 @@
       xmlns:local="clr-namespace:Uno"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="Game_Page">
-
+      Title="Game_Page"
+      Loaded="Page_Loaded">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition x:Name="CardArea"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="25,0">
+            <Label x:Name="c1" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c2" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c3" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c4" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c5" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c6" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c7" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c8" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c9" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c10" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c11" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c12" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c13" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c14" PreviewMouseLeftButtonUp="onCardClick"/>
+            <Label x:Name="c15" PreviewMouseLeftButtonUp="onCardClick"/>
+        </StackPanel>
         
     </Grid>
+
+
 </Page>
