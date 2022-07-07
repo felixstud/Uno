@@ -13,11 +13,13 @@ namespace Uno.Classes
         {
             Name = name;
             this.ip_port = ip_port;
+            CardStack = new CardStack();
         }
         public Player() : this("?", "?") { }
 
         
         public string Name { get; set; }
         public string ip_port { get; set; }
+        public CardStack CardStack;
     }
 }
