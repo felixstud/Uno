@@ -15,7 +15,12 @@
             <RowDefinition/>
             <RowDefinition x:Name="CardArea"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="25,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="25,0" Grid.ColumnSpan="3">
             <Label x:Name="c1" PreviewMouseLeftButtonUp="onCardClick"/>
             <Label x:Name="c2" PreviewMouseLeftButtonUp="onCardClick"/>
             <Label x:Name="c3" PreviewMouseLeftButtonUp="onCardClick"/>
@@ -32,7 +37,18 @@
             <Label x:Name="c14" PreviewMouseLeftButtonUp="onCardClick"/>
             <Label x:Name="c15" PreviewMouseLeftButtonUp="onCardClick"/>
         </StackPanel>
+        <Label x:Name="MiddleStack" Width="100" Height="140" FontSize="30" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"/>
         
+        <Label x:Name="lab_Player1_Name" Width="200" Height="30" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0"/>
+        <Label x:Name="lab_Player1_Number" Width="50" Height="30" VerticalAlignment="Top" Grid.Row="2" Grid.Column="0"/>
+
+        <Label x:Name="lab_Player2_Name" Width="200" Height="30" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1"/>
+        <Label x:Name="lab_Player2_Number" Width="50" Height="30" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1"/>
+
+        <Label x:Name="lab_Player3_Name" Width="200" Height="30" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="2"/>
+        <Label x:Name="lab_Player3_Number" Width="50" Height="30" VerticalAlignment="Top" Grid.Row="2" Grid.Column="3"/>
+
+        <Button x:Name="btn_newCard" Width="80" Height="50" VerticalAlignment="Center" HorizontalAlignment="Left" Content="New Card" Grid.Row="2" Grid.Column="2" Click="btn_newCard_Click"/>
     </Grid>
 
 
