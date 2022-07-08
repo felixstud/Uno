@@ -8,7 +8,7 @@ namespace Uno.Classes
 {
     public static class Globals
     {
-        public static int MaxPlayers = 2;
+        public static int MaxPlayers = 4; //Max max = 4
         public static Random randomNumber = new Random();
         static public string ipport = "127.0.0.1:8000";
 

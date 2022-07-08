@@ -12,7 +12,7 @@ namespace Uno.Classes
     {
         public static string myName;
         public static CardStack myCards = new CardStack();
-        private static SimpleTcpClient client = new SimpleTcpClient(Globals.ipport);
+        public static SimpleTcpClient client = new SimpleTcpClient(Globals.ipport);
 
         public static bool find_server()
         {
@@ -52,19 +52,24 @@ namespace Uno.Classes
                 myName = msg.Remove(0, 6);
                 Events.StatusChangedEvent("Name changed to: " + msg);
             }
-            /*else if (msg.Contains("!player!"))
-            {
-                Globals.Players.Add(JsonSerializer.Deserialize<Player>(msg.Remove(0, 8)));
-                Events.PlayerReceivedEvent(e.IpPort, JsonSerializer.Deserialize<Player>(msg.Remove(0, 8)));
-            }*/
             else if (msg.Contains("!card!"))
             {
-                Card c = JsonSerializer.Deserialize<Card>(msg.Remove(0, 6));
-                Events.CardReceivedEvent(e.IpPort, c);
+                msg = msg.Remove(0, 6);
+                Card c = new Card(msg[0] - 48, msg[1] - 48);
+                //Card c = JsonSerializer.Deserialize<Card>(msg);
+                Events.CardReceivedEvent(e.IpPort, c, false);
             }
             else if(msg.Contains("!Enemyname!"))
             {
-                Events.EnemyPlayerNameReceivedEvent(msg.Remove(0, 11)[0] - 48, msg.Remove(0, 1));
+                string name = msg.Remove(0, 12);
+                int number = msg.Remove(0, 11)[0] - 48;
+                Events.EnemyPlayerNameReceivedEvent(number, name);
+            }
+            else if(msg.Contains("!midcard!"))
+            {
+                msg = msg.Remove(0, 9);
+                Card c = new Card(msg[0] - 48, msg[1] - 48);
+                Events.CardReceivedEvent(e.IpPort, c, true);
             }
         }
         public static void Stop()
@@ -92,10 +97,10 @@ namespace Uno.Classes
                 if (StatusChanged != null)
                     StatusChanged(null, new StatusChangedEventArgs(state));
             }
-            public static void CardReceivedEvent(string ipport, Card c)
+            public static void CardReceivedEvent(string ipport, Card c, bool mid)
             {
                 if (CardReceived != null)
-                    CardReceived(null, new CardReceivedEventArgs(ipport, c));
+                    CardReceived(null, new CardReceivedEventArgs(ipport, c, mid));
             }
             public static void PlayerReceivedEvent(string ipport, Player P)
             {
@@ -116,14 +121,18 @@ namespace Uno.Classes
 
         public class CardReceivedEventArgs : EventArgs
         {
-            public static string IpPort;
-            public static Card Card;
+            public string IpPort;
+            public Card Card;
+            public bool midcard = false;
 
-            public CardReceivedEventArgs(string ipPort, Card card)
+            public CardReceivedEventArgs(string ipPort, Card card, bool midcard)
             {
                 IpPort = ipPort;
                 Card = card;
+                this.midcard = midcard;
             }
+
+
         }
 
         public class PlayerReceivedEventArgs : EventArgs

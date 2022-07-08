@@ -34,8 +34,18 @@ namespace Uno
         {
             GameClient.Events.StatusChanged += Events_StatusChanged;
             GameClient.Events.ConnectionCounterChanged += Events_ConnectionCounterChanged;
+            GameClient.client.Events.Connected += Events_Connected;
             if (!GameClient.find_server())
-                GameServer.StartServer();
+            {
+                if (GameServer.StartServer())
+                    update_status("New Server created");
+                GameClient.find_server();
+            }
+        }
+
+        private void Events_Connected(object? sender, SuperSimpleTcp.ConnectionEventArgs e)
+        {
+            update_status("Connected to server: " + e.IpPort);
         }
 
         private async void Events_ConnectionCounterChanged(object? sender, GameClient.ConnectionCounterChangedEventArgs e)

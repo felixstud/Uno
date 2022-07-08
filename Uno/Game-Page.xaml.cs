@@ -35,31 +35,48 @@ namespace Uno
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             this.initializeLabels();
+            this.init();
         }
 
-        private void init()
+        private async void init()
         {
             GameClient.Events.CardReceived += Events_CardReceived;
             GameClient.Events.EnemyPlayerNameReceived += Events_EnemyPlayerNameReceived;
 
             GameClient.RequestServer("?EnemyNames?");
-            while (NameLabels[Globals.MaxPlayers - 1] == null) ;
-            for(int i = 0; i < 7; i++)
+            while (NameLabels[Globals.MaxPlayers - 2].Content != null) ;
+            await Task.Delay(300);
+            while (!GameClient.client.IsConnected) ;
+            /*for(int i = 0; i < 7; i++)
             {
                 GameClient.RequestServer("?card?");
-                while (GameClient.myCards.getCounter() != (i + 1)) ;
-            }
+                while (GameClient.myCards.getCounter() <= (i + 1))
+                { }// await Task.Delay(100);
+            }*/
+            GameClient.RequestServer("?card?7");
+            while (GameClient.myCards.getCounter() < 7) ;
             ShowOwnCards();
         }
 
         private void Events_EnemyPlayerNameReceived(object? sender, GameClient.EnemyNameReceivedEventArgs e)
         {
-            NameLabels[e.Playernumber].Content = e.PlayerName;
+            if (NameLabels[e.Playernumber] != null)
+            {
+                NameLabels[e.Playernumber].Dispatcher.BeginInvoke(new Action(() =>
+                    {NameLabels[e.Playernumber].Content = e.PlayerName;}));
+            }
         }
 
         private void Events_CardReceived(object? sender, GameClient.CardReceivedEventArgs e)
         {
-            ShowOwnCards();
+            if (e.midcard == false)
+            {
+                GameClient.myCards.AddCard(e.Card);
+                ShowOwnCards();
+            }
+            else
+                ShowCard(MiddleStack, e.Card);
+
         }
 
         private void initializeLabels()
@@ -111,11 +128,14 @@ namespace Uno
                 ShowCard(CardLabels[i], c);
                 i++;
             }
-            while(i < 15)
+            while(i < CardLabels.Count() - 1)
             {
-                CardLabels[i].Visibility = Visibility.Hidden;
-                CardLabels[i].Content = null;
-                CardLabels[i].Background = null;
+                CardLabels[i].Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    CardLabels[i].Visibility = Visibility.Hidden;
+                    CardLabels[i].Content = null;
+                    CardLabels[i].Background = null;
+                }));
                 i++;
             }
         }
@@ -123,9 +143,13 @@ namespace Uno
         private void ShowCard(Label L, Card C)
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
-            L.Content = C.number.ToString();
-            L.Background = lcolor[C.color];
-            L.Visibility = Visibility.Visible;
+            L.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                L.Content = C.number.ToString();
+                L.Background = lcolor[C.color];
+                L.Visibility = Visibility.Visible;
+
+            }));
         }
 
         private void onCardClick(object sender, MouseButtonEventArgs e)

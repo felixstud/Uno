@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SuperSimpleTcp;
 using Uno.Classes;
+using System.Threading;
+using System.Text.Json;
 
 namespace Uno.Classes
 {
@@ -13,7 +15,7 @@ namespace Uno.Classes
         static private SimpleTcpServer server;
         static private CardStack AllCards;
         static private CardStack MiddleStack;
-        static private List<Player> AllPlayers;
+        static private List<Player> AllPlayers = new List<Player>();
 
         static public bool StartServer()
         {
@@ -21,6 +23,10 @@ namespace Uno.Classes
             server.Events.ClientConnected += Events_ClientConnected;
             server.Events.ClientDisconnected += Events_ClientDisconnected;
             server.Events.DataReceived += Events_DataReceived;
+            server.Keepalive.EnableTcpKeepAlives = true;
+            server.Keepalive.TcpKeepAliveInterval = 5;      // seconds to wait before sending subsequent keepalive
+            server.Keepalive.TcpKeepAliveTime = 5;          // seconds to wait before sending a keepalive
+            server.Keepalive.TcpKeepAliveRetryCount = 5;    // number of failed keepalive probes before terminating connection
 
             try
             {
@@ -34,31 +40,13 @@ namespace Uno.Classes
             return true;
         }
 
-        private static async void Events_DataReceived(object? sender, DataReceivedEventArgs e)
+        private static void Events_DataReceived(object? sender, DataReceivedEventArgs e)
         {
             string msg = Encoding.UTF8.GetString(e.Data);
-            if (msg.Contains("!name!"))
-            {
-                string p_name = addPlayer(msg.Remove(0, 6), e.IpPort);
-                if (!p_name.Equals(msg.Remove(0, 6)))
-                    server.Send(e.IpPort, "!name!" + p_name);
-                serverBroadcast("!counter!" + AllPlayers.Count().ToString());
-            }
-            else if(msg.Contains("?EnenyNames?"))
-            {
-                int from = 0;
-                for(int i = 0; i < Globals.MaxPlayers; i++)
-                {
-                    if (e.IpPort.Equals(AllPlayers[i].ip_port))
-                        from = i;
-                }
-                for(int i = 0; i < Globals.MaxPlayers-1; i++)
-                {
-                    int k = (i + from + 1) % 4;
-                    server.Send(e.IpPort, i.ToString() + AllPlayers[k].Name);
-                    await Task.Delay(200);
-                }
-            }
+            RxMsg m = new RxMsg(msg, e.IpPort);
+            //m.readMessage();
+            Thread ReadData = new Thread(new ThreadStart(m.readMessage));
+            ReadData.Start();
         }
         private static void Events_ClientDisconnected(object? sender, ConnectionEventArgs e)
         {
@@ -70,35 +58,6 @@ namespace Uno.Classes
             server.Send(e.IpPort, "?name?");
         }
 
-        public static string addPlayer(string name, string IpPort)
-        {
-            name = CheckDuplicateNames(name);
-            AllPlayers.Add(new Player(name, IpPort));
-            return name;
-        }
-        public static void removePlayer(string IpPort)
-        {
-            foreach (Player P in AllPlayers)
-            {
-                if (P.ip_port == IpPort)
-                {
-                    AllPlayers.Remove(P);
-                    return;
-                }
-            }
-        }
-        private static string CheckDuplicateNames(string name)
-        {
-            foreach (Player iter in AllPlayers)
-            {
-                foreach (Player player in AllPlayers)
-                {
-                    if (string.Equals(player.Name, name))
-                        name += "!";
-                }
-            }
-            return name;
-        }
         public static void serverBroadcast(string msg)
         {
             if (server == null)
@@ -121,7 +80,102 @@ namespace Uno.Classes
             AllCards.createAllCards();
             MiddleStack = new CardStack();
             MiddleStack.AddCard(AllCards.getRandomCard());
-            //send random Card to Clients
+            serverBroadcast("!midcard!" + MiddleStack.Cards.Last().number.ToString() + MiddleStack.Cards.Last().color.ToString());
         }//ToDo
+        private static void removePlayer(string IpPort)
+        {
+            foreach (Player P in AllPlayers)
+            {
+                if (P.ip_port == IpPort)
+                {
+                    AllPlayers.Remove(P);
+                    return;
+                }
+            }
+        }
+
+        private class RxMsg
+        {
+            public string msg;
+            public string ipport;
+
+            public RxMsg(string message, string ipport)
+            {
+                this.msg = message;
+                this.ipport = ipport;
+            }
+
+            public async void readMessage()
+            {
+                if (msg.Contains("!name!"))
+                {
+                    string p_name = addPlayer(msg.Remove(0, 6), ipport);
+                    if (!p_name.Equals(msg.Remove(0, 6)))
+                        await server.SendAsync(ipport, "!name!" + p_name);
+                    await Task.Delay(500);
+                    serverBroadcast("!counter!" + AllPlayers.Count().ToString());
+                }
+                else if (msg.Contains("?EnemyNames?"))
+                {
+                    int from = 0;
+                    for (int i = 0; i < Globals.MaxPlayers; i++)
+                    {
+                        if (ipport.Equals(AllPlayers[i].ip_port))
+                            from = i;
+                    }
+                    for (int i = 0; i < (Globals.MaxPlayers - 1); i++)
+                    {
+                        int k = (i + from + 1) % Globals.MaxPlayers;
+                        await server.SendAsync(ipport, "!Enemyname!" + i.ToString() + AllPlayers[k].Name);
+                        await Task.Delay(500);
+                    }
+                }
+                else if(msg.Contains("?card?"))
+                {
+                    int num;
+                    if (msg.Equals("?card?"))
+                        num = 1;
+                    else
+                        num = msg.Remove(0, 6)[0] - 48;
+                    for(int i = 0; i < num; i++)
+                    {
+                        Card c = AllCards.getRandomCard();
+                        string m = "!card!" + c.number.ToString() + c.color.ToString();//JsonSerializer.Serialize<Card>(AllCards.getRandomCard());
+                        await server.SendAsync(ipport, m);
+                        await Task.Delay(300);
+                    }
+                }
+            }
+            public string addPlayer(string name, string IpPort)
+            {
+                name = CheckDuplicateNames(name);
+                AllPlayers.Add(new Player(name, IpPort));
+                return name;
+            }
+            public void removePlayer(string IpPort)
+            {
+                foreach (Player P in AllPlayers)
+                {
+                    if (P.ip_port == IpPort)
+                    {
+                        AllPlayers.Remove(P);
+                        return;
+                    }
+                }
+            }
+            private string CheckDuplicateNames(string name)
+        {
+            foreach (Player iter in AllPlayers)
+            {
+                foreach (Player player in AllPlayers)
+                {
+                    if (string.Equals(player.Name, name))
+                        name += "!";
+                }
+            }
+            return name;
+        }
+
+        }
     }
 }
