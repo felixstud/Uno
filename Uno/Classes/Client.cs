@@ -62,8 +62,10 @@ namespace Uno.Classes
             else if(msg.Contains("!Enemyname!"))
             {
                 string name = msg.Remove(0, 12);
+                name = name.Remove(name.Length - 1);
                 int number = msg.Remove(0, 11)[0] - 48;
-                Events.EnemyPlayerNameReceivedEvent(number, name);
+                int nCards = msg[msg.Length - 1] - 48;
+                Events.EnemyPlayerNameReceivedEvent(number, name, nCards);
             }
             else if(msg.Contains("!midcard!"))
             {
@@ -102,7 +104,7 @@ namespace Uno.Classes
                 if (CardReceived != null)
                     CardReceived(null, new CardReceivedEventArgs(ipport, c, mid));
             }
-            public static void PlayerReceivedEvent(string ipport, Player P)
+            public static void PlayerReceivedEvent(string ipport, Player P, int nCards)
             {
                 if(PlayerReceived != null)
                     PlayerReceived(null, new PlayerReceivedEventArgs(ipport, P));
@@ -112,10 +114,10 @@ namespace Uno.Classes
                 if (ConnectionCounterChanged != null)
                     ConnectionCounterChanged(null, new ConnectionCounterChangedEventArgs(counter));
             }
-            public static void EnemyPlayerNameReceivedEvent(int Pnumber, string Pname)
+            public static void EnemyPlayerNameReceivedEvent(int Pnumber, string Pname, int nCards)
             {
                 if(EnemyPlayerNameReceived != null)
-                    EnemyPlayerNameReceived(null, new EnemyNameReceivedEventArgs(Pnumber, Pname));
+                    EnemyPlayerNameReceived(null, new EnemyNameReceivedEventArgs(Pnumber, Pname, nCards));
             }
         }
 
@@ -171,11 +173,13 @@ namespace Uno.Classes
         {
             public int Playernumber;
             public string PlayerName;
+            public int nCards;
 
-            public EnemyNameReceivedEventArgs(int playernumber, string playerName)
+            public EnemyNameReceivedEventArgs(int playernumber, string playerName, int nCards)
             {
                 Playernumber = playernumber;
                 PlayerName = playerName;
+                this.nCards = nCards;
             }
         }
     }

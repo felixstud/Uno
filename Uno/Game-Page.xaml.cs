@@ -43,18 +43,15 @@ namespace Uno
             GameClient.Events.CardReceived += Events_CardReceived;
             GameClient.Events.EnemyPlayerNameReceived += Events_EnemyPlayerNameReceived;
 
+            while (!GameClient.client.IsConnected) ;
+            GameClient.RequestServer("?card?7");
+            while (GameClient.myCards.getCounter() < 7) ;
+            await Task.Delay(300);
             GameClient.RequestServer("?EnemyNames?");
             while (NameLabels[Globals.MaxPlayers - 2].Content != null) ;
             await Task.Delay(300);
-            while (!GameClient.client.IsConnected) ;
-            /*for(int i = 0; i < 7; i++)
-            {
-                GameClient.RequestServer("?card?");
-                while (GameClient.myCards.getCounter() <= (i + 1))
-                { }// await Task.Delay(100);
-            }*/
-            GameClient.RequestServer("?card?7");
-            while (GameClient.myCards.getCounter() < 7) ;
+            GameClient.RequestServer("?midcard?");
+            while (MiddleStack.Content == "") ;
             ShowOwnCards();
         }
 
@@ -64,6 +61,11 @@ namespace Uno
             {
                 NameLabels[e.Playernumber].Dispatcher.BeginInvoke(new Action(() =>
                     {NameLabels[e.Playernumber].Content = e.PlayerName;}));
+            }
+            if (CountLabels[e.Playernumber] != null)
+            {
+                CountLabels[e.Playernumber].Dispatcher.BeginInvoke(new Action(() =>
+                    { CountLabels[e.Playernumber].Content = e.nCards.ToString(); }));
             }
         }
 

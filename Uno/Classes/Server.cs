@@ -80,7 +80,7 @@ namespace Uno.Classes
             AllCards.createAllCards();
             MiddleStack = new CardStack();
             MiddleStack.AddCard(AllCards.getRandomCard());
-            serverBroadcast("!midcard!" + MiddleStack.Cards.Last().number.ToString() + MiddleStack.Cards.Last().color.ToString());
+            //serverBroadcast("!midcard!" + MiddleStack.Cards.Last().number.ToString() + MiddleStack.Cards.Last().color.ToString());
         }//ToDo
         private static void removePlayer(string IpPort)
         {
@@ -126,12 +126,18 @@ namespace Uno.Classes
                     for (int i = 0; i < (Globals.MaxPlayers - 1); i++)
                     {
                         int k = (i + from + 1) % Globals.MaxPlayers;
-                        await server.SendAsync(ipport, "!Enemyname!" + i.ToString() + AllPlayers[k].Name);
+                        await server.SendAsync(ipport, "!Enemyname!" + i.ToString() + AllPlayers[k].Name + AllPlayers[k].CardStack.Cards.Count().ToString());
                         await Task.Delay(500);
                     }
                 }
                 else if(msg.Contains("?card?"))
                 {
+                    Player from = new Player();
+                    foreach (Player P in AllPlayers)
+                    {
+                        if (P.ip_port.Equals(ipport))
+                            from = P;
+                    }
                     int num;
                     if (msg.Equals("?card?"))
                         num = 1;
@@ -140,10 +146,17 @@ namespace Uno.Classes
                     for(int i = 0; i < num; i++)
                     {
                         Card c = AllCards.getRandomCard();
-                        string m = "!card!" + c.number.ToString() + c.color.ToString();//JsonSerializer.Serialize<Card>(AllCards.getRandomCard());
+                        from.CardStack.AddCard(c);
+                        string m = "!card!" + c.number.ToString() + c.color.ToString();
                         await server.SendAsync(ipport, m);
                         await Task.Delay(300);
                     }
+                }
+                else if(msg.Contains("?midcard?"))
+                {
+                    Card c = MiddleStack.Cards.Last();
+                    string m = "!midcard!" + c.number.ToString() + c.color.ToString();
+                    await server.SendAsync(ipport, m);
                 }
             }
             public string addPlayer(string name, string IpPort)
