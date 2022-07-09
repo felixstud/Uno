@@ -182,7 +182,7 @@ namespace Uno
 
         private void btn_newCard_Click(object sender, RoutedEventArgs e)
         {
-
+            GameClient.RequestServer("?card?");
         }
 
         private void btn_Exit_Click(object sender, RoutedEventArgs e)
