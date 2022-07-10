@@ -42,6 +42,7 @@ namespace Uno
         {
             GameClient.Events.CardReceived += Events_CardReceived;
             GameClient.Events.EnemyPlayerNameReceived += Events_EnemyPlayerNameReceived;
+            GameClient.Events.MoveReceived += Events_MoveReceived;
 
             while (!GameClient.client.IsConnected) ;
             GameClient.RequestServer("?card?7");
@@ -53,6 +54,19 @@ namespace Uno
             GameClient.RequestServer("?midcard?");
             while (MiddleStack.Content == "") ;
             ShowOwnCards();
+            while (CardLabels[6].Content == null) ;
+            GameClient.RequestServer("?move?");
+        }
+
+        private void Events_MoveReceived(object? sender, GameClient.MoveEventArgs e)
+        {
+            if(e.Playername.Equals(GameClient.myName))
+                this.Move(true);
+            else
+            {
+                this.Move(false);
+                this.MarkActivePlayer(e.Playername);
+            }
         }
 
         private void Events_EnemyPlayerNameReceived(object? sender, GameClient.EnemyNameReceivedEventArgs e)
@@ -71,14 +85,40 @@ namespace Uno
 
         private void Events_CardReceived(object? sender, GameClient.CardReceivedEventArgs e)
         {
-            if (e.midcard == false)
+            if (e.midcard == true)
             {
-                GameClient.myCards.AddCard(e.Card);
-                ShowOwnCards();
-            }
-            else
                 ShowCard(MiddleStack, e.Card);
+                return;
+            }
+            else if (e.remove == true)
+                GameClient.myCards.RemoveCard(e.Card);
+            else
+                GameClient.myCards.AddCard(e.Card);
+            ShowOwnCards();
+        }
 
+        private void Move(bool activate)
+        {
+            foreach (Label L in CardLabels)
+            {
+                L.Dispatcher.BeginInvoke(new Action(() => {L.IsEnabled = activate;}));
+            }
+            btn_newCard.Dispatcher.BeginInvoke(new Action(() =>{ btn_newCard.IsEnabled = activate; }));
+            btn_SayUno.Dispatcher.BeginInvoke(new Action(() => { btn_SayUno.IsEnabled = activate; }));
+        }
+
+        private void MarkActivePlayer(string Name)
+        {
+            foreach(Label L in NameLabels)
+            {
+                L.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (L.Content.Equals(Name))
+                        L.Background = Brushes.LightGreen;
+                    else
+                        L.Background = Brushes.Transparent;
+                }));
+            }
         }
 
         private void initializeLabels()
@@ -106,7 +146,7 @@ namespace Uno
                 L.Height = 90;
                 L.HorizontalContentAlignment = HorizontalAlignment.Center;
                 L.VerticalContentAlignment = VerticalAlignment.Center;
-                L.FontSize = 20;
+                L.FontSize = 30;
                 L.Margin = new Thickness(1);
             }
 
@@ -124,22 +164,27 @@ namespace Uno
         private void ShowOwnCards()
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
-            int i = 0;
-            foreach (Card c in GameClient.myCards.Cards)
+            for(int i = 0; i < CardLabels.Count() - 1; i++)
             {
-                ShowCard(CardLabels[i], c);
-                i++;
-            }
-            while(i < CardLabels.Count() - 1)
-            {
-                CardLabels[i].Dispatcher.BeginInvoke(new Action(() =>
+                if(i < GameClient.myCards.getCounter())
                 {
-                    CardLabels[i].Visibility = Visibility.Hidden;
-                    CardLabels[i].Content = null;
-                    CardLabels[i].Background = null;
-                }));
-                i++;
+                    ShowCard(CardLabels[i], GameClient.myCards.Cards[i]);
+                }
+                else
+                {
+                    HideCard(CardLabels[i]);
+                }
             }
+        }
+
+        private void HideCard(Label L)
+        {
+            L.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                L.Content = "FU";
+                L.Background = Brushes.White;
+                L.Visibility = Visibility.Hidden;
+            }));
         }
 
         private void ShowCard(Label L, Card C)
@@ -156,12 +201,13 @@ namespace Uno
 
         private void onCardClick(object sender, MouseButtonEventArgs e)
         {
+            this.Move(false);
             foreach (Label L in CardLabels)
             {
                 if (sender.Equals(L))
                 {
-                    Card LabelCard = LabelToCard(L);
-                    //Move Card to middle Stack
+                    Card c = LabelToCard(L);
+                    GameClient.RequestServer("!card!" + c.number.ToString() + c.color.ToString());
                 }
             }
         }//ToDo
@@ -182,6 +228,7 @@ namespace Uno
 
         private void btn_newCard_Click(object sender, RoutedEventArgs e)
         {
+            btn_newCard.Dispatcher.BeginInvoke(new Action(() => { btn_newCard.IsEnabled = false; }));
             GameClient.RequestServer("?card?");
         }
 
