@@ -57,7 +57,13 @@ namespace Uno.Classes
                 msg = msg.Remove(0, 6);
                 Card c = new Card(msg[0] - 48, msg[1] - 48);
                 //Card c = JsonSerializer.Deserialize<Card>(msg);
-                Events.CardReceivedEvent(e.IpPort, c, false);
+                Events.CardReceivedEvent(e.IpPort, c, false, false);
+            }
+            else if (msg.Contains("!remcard!"))
+            {
+                msg = msg.Remove(0, 9);
+                Card c = new Card(msg[0] - 48, msg[1] - 48);
+                Events.CardReceivedEvent(e.IpPort, c, false, true);
             }
             else if(msg.Contains("!Enemyname!"))
             {
@@ -71,7 +77,11 @@ namespace Uno.Classes
             {
                 msg = msg.Remove(0, 9);
                 Card c = new Card(msg[0] - 48, msg[1] - 48);
-                Events.CardReceivedEvent(e.IpPort, c, true);
+                Events.CardReceivedEvent(e.IpPort, c, true, false);
+            }
+            else if(msg.Contains("!move!"))
+            {
+                Events.MoveReceivedEvent(msg.Remove(0, 6));
             }
         }
         public static void Stop()
@@ -93,16 +103,17 @@ namespace Uno.Classes
             public static event EventHandler<StatusChangedEventArgs> StatusChanged;
             public static event EventHandler<ConnectionCounterChangedEventArgs> ConnectionCounterChanged;
             public static event EventHandler<EnemyNameReceivedEventArgs> EnemyPlayerNameReceived;
+            public static event EventHandler<MoveEventArgs> MoveReceived;
 
             public static void StatusChangedEvent(string state)
             {
                 if (StatusChanged != null)
                     StatusChanged(null, new StatusChangedEventArgs(state));
             }
-            public static void CardReceivedEvent(string ipport, Card c, bool mid)
+            public static void CardReceivedEvent(string ipport, Card c, bool mid, bool remove)
             {
                 if (CardReceived != null)
-                    CardReceived(null, new CardReceivedEventArgs(ipport, c, mid));
+                    CardReceived(null, new CardReceivedEventArgs(ipport, c, mid, remove));
             }
             public static void PlayerReceivedEvent(string ipport, Player P, int nCards)
             {
@@ -119,6 +130,11 @@ namespace Uno.Classes
                 if(EnemyPlayerNameReceived != null)
                     EnemyPlayerNameReceived(null, new EnemyNameReceivedEventArgs(Pnumber, Pname, nCards));
             }
+            public static void MoveReceivedEvent(string Name)
+            {
+                if (MoveReceived != null)
+                    MoveReceived(null, new MoveEventArgs(Name));
+            }
         }
 
         public class CardReceivedEventArgs : EventArgs
@@ -126,12 +142,14 @@ namespace Uno.Classes
             public string IpPort;
             public Card Card;
             public bool midcard = false;
+            public bool remove;
 
-            public CardReceivedEventArgs(string ipPort, Card card, bool midcard)
+            public CardReceivedEventArgs(string ipPort, Card card, bool midcard, bool remove)
             {
                 IpPort = ipPort;
                 Card = card;
                 this.midcard = midcard;
+                this.remove = remove;
             }
 
 
@@ -180,6 +198,16 @@ namespace Uno.Classes
                 Playernumber = playernumber;
                 PlayerName = playerName;
                 this.nCards = nCards;
+            }
+        }
+
+        public class MoveEventArgs : EventArgs
+        {
+            public string Playername;
+
+            public MoveEventArgs(string playername)
+            {
+                Playername = playername;
             }
         }
     }
