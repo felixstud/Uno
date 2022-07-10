@@ -16,6 +16,7 @@ namespace Uno.Classes
         static private CardStack AllCards;
         static private CardStack MiddleStack;
         static private List<Player> AllPlayers = new List<Player>();
+        static private int activePlayer = 0;
 
         static public bool StartServer()
         {
@@ -63,7 +64,18 @@ namespace Uno.Classes
             if (server == null)
                 return;
             IEnumerable<string> clients = server.GetClients();
-            foreach (string client in clients) server.Send(client, msg);
+            foreach (string client in clients)
+            {
+                try
+                {
+                    if (server.IsConnected(client))
+                        server.Send(client, msg);
+                }
+                catch
+                {
+
+                }
+            }
         }
         public static void Stop()
         {
@@ -93,6 +105,13 @@ namespace Uno.Classes
                 }
             }
         }
+        public static bool isActive()
+        {
+            if (server != null)
+                if (server.IsListening)
+                    return true;
+            return false;
+        }
 
         private class RxMsg
         {
@@ -114,6 +133,7 @@ namespace Uno.Classes
                         await server.SendAsync(ipport, "!name!" + p_name);
                     await Task.Delay(500);
                     serverBroadcast("!counter!" + AllPlayers.Count().ToString());
+                    await Task.Delay(500);
                 }
                 else if (msg.Contains("?EnemyNames?"))
                 {
@@ -152,11 +172,29 @@ namespace Uno.Classes
                         await Task.Delay(300);
                     }
                 }
+                else if(msg.Contains("!card!"))
+                {
+                    Card c = new Card(msg[6] - 48, msg[7] - 48);
+                    MiddleStack.AddCard(c);
+                    activePlayer++;
+                    if (activePlayer >= Globals.MaxPlayers)
+                        activePlayer = 0;
+                    await Task.Delay(500);
+                    serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
+                    await Task.Delay(500);
+                    serverBroadcast("!midcard!" + msg.Remove(0, 6));
+                    await Task.Delay(500);
+                    server.Send(ipport, "!remcard!" + msg.Remove(0, 6));
+                }
                 else if(msg.Contains("?midcard?"))
                 {
                     Card c = MiddleStack.Cards.Last();
                     string m = "!midcard!" + c.number.ToString() + c.color.ToString();
                     await server.SendAsync(ipport, m);
+                }
+                else if (msg.Contains("?move?"))
+                {
+                    serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                 }
             }
             public string addPlayer(string name, string IpPort)
