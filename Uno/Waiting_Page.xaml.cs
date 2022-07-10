@@ -54,7 +54,10 @@ namespace Uno
             if (e.counter == Globals.MaxPlayers)
             {
                 this.update_status(Globals.MaxPlayers.ToString() + " Players connected. Ready to Start the game.");
-                await Task.Delay(3000);
+                if(!GameServer.isActive())
+                {
+                    await Task.Delay(3000);
+                }
                 this.Dispatcher.BeginInvoke(new Action(() => { this.NavigationService.Navigate(new Game_Page()); }));
             }
         }
