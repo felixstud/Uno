@@ -65,6 +65,25 @@ namespace Uno.Classes
                 Card c = new Card(msg[0] - 48, msg[1] - 48);
                 Events.CardReceivedEvent(e.IpPort, c, false, true);
             }
+            else if (msg.Contains("!numCard!"))
+            {
+                msg = msg.Remove(0, 9);
+                string num = "";
+                while(true)
+                {
+                    if (msg[0] == '.')
+                    {
+                        msg = msg.Remove(0, 1);
+                        break;
+                    }
+                    else
+                    {
+                        num += msg[0];
+                        msg = msg.Remove(0, 1);
+                    }
+                }
+                Events.EnemyPlayerNameReceivedEvent(-1, msg, Int32.Parse(num));
+            }
             else if(msg.Contains("!Enemyname!"))
             {
                 string name = msg.Remove(0, 12);
