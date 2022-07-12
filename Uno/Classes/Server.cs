@@ -176,13 +176,20 @@ namespace Uno.Classes
                 {
                     Card c = new Card(msg[6] - 48, msg[7] - 48);
                     MiddleStack.AddCard(c);
+                    if(AllPlayers[activePlayer].CardStack.RemoveCard(c) == null)
+                    {
+                        serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
+                        return;
+                    }
+                    await Task.Delay(500);
+                    serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.getCounter().ToString() + "." + AllPlayers[activePlayer].Name);
                     activePlayer++;
                     if (activePlayer >= Globals.MaxPlayers)
                         activePlayer = 0;
                     await Task.Delay(500);
-                    serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
-                    await Task.Delay(500);
                     serverBroadcast("!midcard!" + msg.Remove(0, 6));
+                    await Task.Delay(500);
+                    serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                     await Task.Delay(500);
                     server.Send(ipport, "!remcard!" + msg.Remove(0, 6));
                 }
