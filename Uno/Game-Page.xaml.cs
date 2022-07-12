@@ -48,20 +48,23 @@ namespace Uno
             GameClient.RequestServer("?card?7");
             while (GameClient.myCards.getCounter() < 7) ;
             await Task.Delay(300);
-            GameClient.RequestServer("?EnemyNames?");
-            while (NameLabels[Globals.MaxPlayers - 2].Content != null) ;
-            await Task.Delay(300);
             GameClient.RequestServer("?midcard?");
             while (MiddleStack.Content == "") ;
+            await Task.Delay(300);
+            GameClient.RequestServer("?EnemyNames?");
+            while (NameLabels[Globals.MaxPlayers - 2].Content != null) ;
             ShowOwnCards();
             while (CardLabels[6].Content == null) ;
-            GameClient.RequestServer("?move?");
+            //GameClient.RequestServer("?move?"); //Crashes the Game ?!?!?
         }
 
         private void Events_MoveReceived(object? sender, GameClient.MoveEventArgs e)
         {
             if(e.Playername.Equals(GameClient.myName))
+            {
+                this.MarkActivePlayer(GameClient.myName);
                 this.Move(true);
+            }
             else
             {
                 this.Move(false);
@@ -71,6 +74,21 @@ namespace Uno
 
         private void Events_EnemyPlayerNameReceived(object? sender, GameClient.EnemyNameReceivedEventArgs e)
         {
+            if(e.Playernumber < 0)
+            {
+                for(int i = 0; i < Globals.MaxPlayers - 2; i++)
+                {
+                    NameLabels[i].Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (NameLabels[i].Content.Equals(e.PlayerName))
+                            e.Playernumber = i;
+                    }));
+                }
+            }
+
+            if (e.Playernumber < 0 || e.Playernumber > Globals.MaxPlayers - 2)
+                return;
+
             if (NameLabels[e.Playernumber] != null)
             {
                 NameLabels[e.Playernumber].Dispatcher.BeginInvoke(new Action(() =>
