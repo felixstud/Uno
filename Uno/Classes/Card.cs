@@ -48,12 +48,13 @@ namespace Uno.Classes
 
         public Card RemoveCard(Card rem)
         {
-            for(int i = 0; i < Cards.Count() - 1; i++)
+            for(int i = 0; i < Cards.Count(); i++)
             {
-                if ((Cards[i].number == rem.number) && Cards[i].color == rem.color)
+                if ((Cards[i].number == rem.number) && (Cards[i].color == rem.color))
                 {
+                    Card c = Cards[i];
                     Cards.RemoveAt(i);
-                    return Cards[i];
+                    return c;
                 }
             }
             return null;
