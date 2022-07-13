@@ -43,11 +43,12 @@ namespace Uno
             GameClient.Events.CardReceived += Events_CardReceived;
             GameClient.Events.EnemyPlayerNameReceived += Events_EnemyPlayerNameReceived;
             GameClient.Events.MoveReceived += Events_MoveReceived;
+            GameClient.Events.WinnerReceived += Events_WinnerReceived;
 
             while (!GameClient.client.IsConnected) ;
-            GameClient.RequestServer("?card?7");
-            while (GameClient.myCards.getCounter() < 7) ;
-            await Task.Delay(300);
+            GameClient.RequestServer("?card?" + Globals.initialCards.ToString());
+            while (GameClient.myCards.getCounter() < Globals.initialCards) ;
+            await Task.Delay(500);
             GameClient.RequestServer("?midcard?");
             while (MiddleStack.Content == "") ;
             await Task.Delay(300);
@@ -56,6 +57,17 @@ namespace Uno
             ShowOwnCards();
             while (CardLabels[6].Content == null) ;
             //GameClient.RequestServer("?move?"); //Crashes the Game ?!?!?
+        }
+
+        private void Events_WinnerReceived(object? sender, GameClient.WinEventArgs e)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (e.name.Equals(GameClient.myName))
+                    this.NavigationService.Navigate(new Winner());
+                else
+                    this.NavigationService.Navigate(new Loser(e.name));
+            }));
         }
 
         private void Events_MoveReceived(object? sender, GameClient.MoveEventArgs e)

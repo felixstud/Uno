@@ -50,7 +50,7 @@ namespace Uno.Classes
             else if (msg.Contains("!name!"))
             {
                 myName = msg.Remove(0, 6);
-                Events.StatusChangedEvent("Name changed to: " + msg);
+                Events.StatusChangedEvent("Name changed to: " + myName);
             }
             else if (msg.Contains("!card!"))
             {
@@ -102,6 +102,10 @@ namespace Uno.Classes
             {
                 Events.MoveReceivedEvent(msg.Remove(0, 6));
             }
+            else if(msg.Contains("!win!"))
+            {
+                Events.WinnerReceivedEvent(msg.Remove(0, 5));
+            }
         }
         public static void Stop()
         {
@@ -123,6 +127,7 @@ namespace Uno.Classes
             public static event EventHandler<ConnectionCounterChangedEventArgs> ConnectionCounterChanged;
             public static event EventHandler<EnemyNameReceivedEventArgs> EnemyPlayerNameReceived;
             public static event EventHandler<MoveEventArgs> MoveReceived;
+            public static event EventHandler<WinEventArgs> WinnerReceived;
 
             public static void StatusChangedEvent(string state)
             {
@@ -153,6 +158,12 @@ namespace Uno.Classes
             {
                 if (MoveReceived != null)
                     MoveReceived(null, new MoveEventArgs(Name));
+            }
+
+            public static void WinnerReceivedEvent(string name)
+            {
+                if(WinnerReceived != null)
+                    WinnerReceived(null, new WinEventArgs(name));
             }
         }
 
@@ -228,6 +239,18 @@ namespace Uno.Classes
             {
                 Playername = playername;
             }
+        }
+
+        public class WinEventArgs : EventArgs
+        {
+            public string name;
+            public int points;
+            public WinEventArgs(string name, int points)
+            {
+                this.name = name;
+                this.points = points;
+            }
+            public WinEventArgs(string name) : this(name, 0) { }
         }
     }
 }
