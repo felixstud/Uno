@@ -43,12 +43,22 @@ namespace Uno
             }
         }
 
+        /// <summary>
+        /// Fired when Connection to a server was succesfull
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Events_Connected(object? sender, SuperSimpleTcp.ConnectionEventArgs e)
         {
             update_status("Connected to server: " + e.IpPort);
         }
 
-        private async void Events_ConnectionCounterChanged(object? sender, GameClient.ConnectionCounterChangedEventArgs e)
+        /// <summary>
+        /// Fired when the total number of connections to server changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void Events_ConnectionCounterChanged(object? sender, GameClient.Events.ConnectionCounterChangedEventArgs e)
         {
             this.update_playercount(e.counter.ToString());
             if (e.counter == Globals.MaxPlayers)
@@ -62,22 +72,40 @@ namespace Uno
             }
         }
 
-        private void Events_StatusChanged(object? sender, GameClient.StatusChangedEventArgs e)
+        /// <summary>
+        /// Fired when Client status changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Events_StatusChanged(object? sender, GameClient.Events.StatusChangedEventArgs e)
         {
             update_status(e.Status);
         }
 
+        /// <summary>
+        /// Fired when Cancel Button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             GameClient.Stop();
             this.NavigationService.Navigate(new Registration_Page());
         }
 
+        /// <summary>
+        /// Sets the Connectioncounter-Label to a specific value
+        /// </summary>
+        /// <param name="number">Number of Clients connected</param>
         private void update_playercount(string number)
         {
             labNumPlayers.Dispatcher.BeginInvoke(new Action(() => { labNumPlayers.Content = number; }));
         }
 
+        /// <summary>
+        /// Writes the input text to the status Bar
+        /// </summary>
+        /// <param name="text">Text to display</param>
         private void update_status(string text)
         {
             txtStatus.Dispatcher.BeginInvoke(new Action(() => {txtStatus.Text = text;}));

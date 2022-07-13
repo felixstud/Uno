@@ -14,7 +14,9 @@ namespace Uno.Classes
         {
             this.Cards = new List<Card>();
         }
-
+        /// <summary>
+        /// Creates all possible Cards (Only Basic Cards)
+        /// </summary>
         public void createAllCards()
         {
             /*
@@ -33,6 +35,10 @@ namespace Uno.Classes
             }
         }
 
+        /// <summary>
+        /// Returns a random Card and deletes it from Stack
+        /// </summary>
+        /// <returns>Random Card</returns>
         public Card getRandomCard()
         {
             int rnd = Globals.randomNumber.Next(0, this.Cards.Count() - 1);
@@ -41,11 +47,20 @@ namespace Uno.Classes
             return ret;
         }
 
+        /// <summary>
+        /// Adds Card to Stack
+        /// </summary>
+        /// <param name="add">Card to add to the Stack</param>
         public void AddCard(Card add)
         {
             Cards.Add(add);
         }
 
+        /// <summary>
+        /// Removes specific Card from Stack, if it exists in Stack
+        /// </summary>
+        /// <param name="rem">Card to remove from Stack</param>
+        /// <returns>Card which has been removed, or null if card didn't exist in Stack</returns>
         public Card RemoveCard(Card rem)
         {
             for(int i = 0; i < Cards.Count(); i++)
@@ -60,11 +75,20 @@ namespace Uno.Classes
             return null;
         }
 
-        public int getCounter()
+        /// <summary>
+        /// Counts the Cards in Stack
+        /// </summary>
+        /// <returns>Number of Cards in Stack</returns>
+        public int Count()
         {
             return Cards.Count();
         }
 
+        /// <summary>
+        /// Returns Card at specific index of Stack
+        /// </summary>
+        /// <param name="index">Index of Card that should be returned</param>
+        /// <returns>Card at index 'index' (null if index out of range)</returns>
         public Card returnCard(int index)
         {
             if (index < Cards.Count)

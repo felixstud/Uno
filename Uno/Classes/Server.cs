@@ -17,7 +17,13 @@ namespace Uno.Classes
         static private CardStack MiddleStack;
         static private List<Player> AllPlayers = new List<Player>();
         static private int activePlayer = 0;
-
+        
+        /// <summary>
+        /// starts a new server with global definded IP and Port
+        /// </summary>
+        /// <returns>
+        /// true if start was successfull
+        /// </returns>
         static public bool StartServer()
         {
             server = new SimpleTcpServer(Globals.ipport);
@@ -40,7 +46,11 @@ namespace Uno.Classes
             StartGame();
             return true;
         }
-
+        /// <summary>
+        /// Event which is trigerred, when the server received new Data from client
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_DataReceived(object? sender, DataReceivedEventArgs e)
         {
             string msg = Encoding.UTF8.GetString(e.Data);
@@ -49,16 +59,33 @@ namespace Uno.Classes
             Thread ReadData = new Thread(new ThreadStart(m.readMessage));
             ReadData.Start();
         }
+        /// <summary>
+        /// Event which is trigerred, when a new Client disconnected from server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_ClientDisconnected(object? sender, ConnectionEventArgs e)
         {
             serverBroadcast("!counter!" + AllPlayers.Count().ToString());
             removePlayer(e.IpPort);
+            server.DisconnectClient(e.IpPort);
         }
+        /// <summary>
+        /// Event which is triggerred, when a new client connected to the server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_ClientConnected(object? sender, ConnectionEventArgs e)
         {
             server.Send(e.IpPort, "?name?");
         }
 
+        /// <summary>
+        /// Method to send a message to all connected clients
+        /// </summary>
+        /// <param name="msg">
+        /// message string
+        /// </param>
         public static void serverBroadcast(string msg)
         {
             if (server == null)
@@ -77,6 +104,9 @@ namespace Uno.Classes
                 }
             }
         }
+        /// <summary>
+        /// Stops the server and resets all parameters
+        /// </summary>
         public static void Stop()
         {
             if (server != null)
@@ -86,14 +116,22 @@ namespace Uno.Classes
             AllPlayers.Clear();
             AllCards.Cards.Clear();
         }
+        /// <summary>
+        /// Generates all necessary components to start a new game
+        /// </summary>
         public static void StartGame()
         {
             AllCards = new CardStack();
             AllCards.createAllCards();
             MiddleStack = new CardStack();
             MiddleStack.AddCard(AllCards.getRandomCard());
-            //serverBroadcast("!midcard!" + MiddleStack.Cards.Last().number.ToString() + MiddleStack.Cards.Last().color.ToString());
-        }//ToDo
+        }
+        /// <summary>
+        /// Removes a Player from AllPlayer-List
+        /// </summary>
+        /// <param name="IpPort">
+        /// IP & Port string of the player who wants to be removed
+        /// </param>
         private static void removePlayer(string IpPort)
         {
             foreach (Player P in AllPlayers)
@@ -105,6 +143,12 @@ namespace Uno.Classes
                 }
             }
         }
+        /// <summary>
+        /// Check if server is active
+        /// </summary>
+        /// <returns>
+        /// True if server is running and listening
+        /// </returns>
         public static bool isActive()
         {
             if (server != null)
@@ -113,17 +157,27 @@ namespace Uno.Classes
             return false;
         }
 
+        /// <summary>
+        /// Class to read and process incomning Data
+        /// </summary>
         private class RxMsg
         {
             public string msg;
             public string ipport;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="message">Received Message</param>
+            /// <param name="ipport">Sender IPPort string</param>
             public RxMsg(string message, string ipport)
             {
                 this.msg = message;
                 this.ipport = ipport;
             }
-
+            /// <summary>
+            /// Reads and processes incoming message strings
+            /// </summary>
             public async void readMessage()
             {
                 if (msg.Contains("!name!"))
@@ -165,6 +219,8 @@ namespace Uno.Classes
                         num = msg.Remove(0, 6)[0] - 48;
                     for(int i = 0; i < num; i++)
                     {
+                        if (AllCards.Count() <= 0)
+                            ShuffleMidStack2AllCards();
                         Card c = AllCards.getRandomCard();
                         from.CardStack.AddCard(c);
                         string m = "!card!" + c.number.ToString() + c.color.ToString();
@@ -182,7 +238,7 @@ namespace Uno.Classes
                 else if(msg.Contains("!card!"))
                 {
                     Card c = new Card(msg[6] - 48, msg[7] - 48);
-                    if(!checkMovePossibility(c.number, c.color))
+                    if(!checkMovePossibility(c))
                     {
                         serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                         return;
@@ -196,9 +252,9 @@ namespace Uno.Classes
                     await Task.Delay(100);
                     serverBroadcast("!midcard!" + msg.Remove(0, 6));
                     await Task.Delay(100);
-                    serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.getCounter().ToString() + "." + AllPlayers[activePlayer].Name);
+                    serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.Count().ToString() + "." + AllPlayers[activePlayer].Name);
                     await Task.Delay(100);
-                    if (AllPlayers[activePlayer].CardStack.getCounter() <= 0)
+                    if (AllPlayers[activePlayer].CardStack.Count() <= 0)
                     {
                         serverBroadcast("!win!" + AllPlayers[activePlayer].Name);
                         return;
@@ -221,12 +277,22 @@ namespace Uno.Classes
                     serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                 }
             }
+            /// <summary>
+            /// Adds a Player to AllPlayer List
+            /// </summary>
+            /// <param name="name"> Name if the Player</param>
+            /// <param name="IpPort">IP and Port string of the Player</param>
+            /// <returns>Changed Name (Only changed, if the name already exists)</returns>
             public string addPlayer(string name, string IpPort)
             {
                 name = CheckDuplicateNames(name);
                 AllPlayers.Add(new Player(name, IpPort));
                 return name;
             }
+            /// <summary>
+            /// Remove Player from AllPlayers-List
+            /// </summary>
+            /// <param name="IpPort">IPPort string from Player</param>
             public void removePlayer(string IpPort)
             {
                 foreach (Player P in AllPlayers)
@@ -238,6 +304,11 @@ namespace Uno.Classes
                     }
                 }
             }
+            /// <summary>
+            /// Check if the name already exists in AllPlayers-List
+            /// </summary>
+            /// <param name="name">Name to be checked</param>
+            /// <returns>Name after checking (Changed if duplicate exists)</returns>
             private string CheckDuplicateNames(string name)
         {
             foreach (Player iter in AllPlayers)
@@ -250,14 +321,30 @@ namespace Uno.Classes
             }
             return name;
         }
-            private bool checkMovePossibility(int number, int color)
+            /// <summary>
+            /// Checks if the Card Combination of parameter and last MidStack-Card is allowed by rules.
+            /// Only Color an Number are getting checked
+            /// </summary>
+            /// <param name="number">Number of the Card</param>
+            /// <param name="color">Color of the card</param>
+            /// <returns>True if move is allowed</returns>
+            private bool checkMovePossibility(Card c)
             {
-                if (MiddleStack.Cards.Last().number == number) 
+                if (MiddleStack.Cards.Last().number == c.number || MiddleStack.Cards.Last().color == c.color) 
                     return true;
-                else if (MiddleStack.Cards.Last().color == color)
-                    return true;
-                else
-                    return false;
+                return false;
+            }
+            /// <summary>
+            /// Randomly adds all cards of the MiddleStack to AllCards-List, except for the last in MiddleStack
+            /// </summary>
+            private void ShuffleMidStack2AllCards()
+            {
+                for(int i = 0; i < MiddleStack.Count() - 2; i++)
+                {
+                    int rnd = Globals.randomNumber.Next(0, MiddleStack.Count() - 2);
+                    AllCards.AddCard(MiddleStack.Cards[rnd]);
+                    MiddleStack.Cards.RemoveAt(rnd);
+                }
             }
         }
     }

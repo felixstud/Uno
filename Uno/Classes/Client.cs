@@ -14,6 +14,10 @@ namespace Uno.Classes
         public static CardStack myCards = new CardStack();
         public static SimpleTcpClient client = new SimpleTcpClient(Globals.ipport);
 
+        /// <summary>
+        /// Try to find a Server with globally defined Ip & Port
+        /// </summary>
+        /// <returns>True if a Server was found and is connection was successfull</returns>
         public static bool find_server()
         {
             try
@@ -28,14 +32,29 @@ namespace Uno.Classes
             client.Events.Connected += Events_Connected;
             return true;
         }
+        /// <summary>
+        /// Fired when connection to server got lost
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_Disconnected(object? sender, ConnectionEventArgs e)
         {
             Events.StatusChangedEvent("Disconnected from Server, please try again!");
         }
+        /// <summary>
+        /// Fired when Connection to server was successfull
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_Connected(object? sender, ConnectionEventArgs e)
         {
             Events.StatusChangedEvent("Connected to Server! IP: " + e.IpPort);
         }
+        /// <summary>
+        /// Fired when new Data was received from server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Events_DataReceived_Client(object? sender, DataReceivedEventArgs e)
         {
             string msg = Encoding.UTF8.GetString(e.Data);
@@ -107,6 +126,9 @@ namespace Uno.Classes
                 Events.WinnerReceivedEvent(msg.Remove(0, 5));
             }
         }
+        /// <summary>
+        /// Stops all connections. Server and Client if active
+        /// </summary>
         public static void Stop()
         {
             if (client.IsConnected)
@@ -114,11 +136,18 @@ namespace Uno.Classes
             myName = null;
             myCards.Cards.Clear();
         }
+        /// <summary>
+        /// Sends a request to server
+        /// </summary>
+        /// <param name="data">Message string</param>
         public static void RequestServer(string data)
         {
             client.Send(data);
         }
 
+        /// <summary>
+        /// Class for firing custom Events with custom EventArgs
+        /// </summary>
         public static class Events
         {
             public static event EventHandler<CardReceivedEventArgs> CardReceived;
@@ -165,92 +194,92 @@ namespace Uno.Classes
                 if(WinnerReceived != null)
                     WinnerReceived(null, new WinEventArgs(name));
             }
-        }
-
-        public class CardReceivedEventArgs : EventArgs
-        {
-            public string IpPort;
-            public Card Card;
-            public bool midcard = false;
-            public bool remove;
-
-            public CardReceivedEventArgs(string ipPort, Card card, bool midcard, bool remove)
+            public class CardReceivedEventArgs : EventArgs
             {
-                IpPort = ipPort;
-                Card = card;
-                this.midcard = midcard;
-                this.remove = remove;
+                public string IpPort;
+                public Card Card;
+                public bool midcard = false;
+                public bool remove;
+
+                public CardReceivedEventArgs(string ipPort, Card card, bool midcard, bool remove)
+                {
+                    IpPort = ipPort;
+                    Card = card;
+                    this.midcard = midcard;
+                    this.remove = remove;
+                }
+
+
             }
 
-
-        }
-
-        public class PlayerReceivedEventArgs : EventArgs
-        {
-            public PlayerReceivedEventArgs(string ipport, Player P)
+            public class PlayerReceivedEventArgs : EventArgs
             {
-                Player = P;
-                this.ipport = ipport;
+                public PlayerReceivedEventArgs(string ipport, Player P)
+                {
+                    Player = P;
+                    this.ipport = ipport;
+                }
+                public Player Player;
+                public string ipport;
+
             }
-            public Player Player;
-            public string ipport;
 
-        }
-
-        public class StatusChangedEventArgs : EventArgs
-    {
-        public StatusChangedEventArgs(string txt)
+            public class StatusChangedEventArgs : EventArgs
         {
-            this.Status = txt;
-        }
-
-        public string Status { get; }
-    }
-
-        public class ConnectionCounterChangedEventArgs : EventArgs
-        {
-            public int counter;
-
-            public ConnectionCounterChangedEventArgs(int counter)
+            public StatusChangedEventArgs(string txt)
             {
-                this.counter = counter;
+                this.Status = txt;
             }
+
+            public string Status { get; }
         }
 
-        public class EnemyNameReceivedEventArgs : EventArgs
-        {
-            public int Playernumber;
-            public string PlayerName;
-            public int nCards;
-
-            public EnemyNameReceivedEventArgs(int playernumber, string playerName, int nCards)
+            public class ConnectionCounterChangedEventArgs : EventArgs
             {
-                Playernumber = playernumber;
-                PlayerName = playerName;
-                this.nCards = nCards;
+                public int counter;
+
+                public ConnectionCounterChangedEventArgs(int counter)
+                {
+                    this.counter = counter;
+                }
             }
-        }
 
-        public class MoveEventArgs : EventArgs
-        {
-            public string Playername;
-
-            public MoveEventArgs(string playername)
+            public class EnemyNameReceivedEventArgs : EventArgs
             {
-                Playername = playername;
+                public int Playernumber;
+                public string PlayerName;
+                public int nCards;
+
+                public EnemyNameReceivedEventArgs(int playernumber, string playerName, int nCards)
+                {
+                    Playernumber = playernumber;
+                    PlayerName = playerName;
+                    this.nCards = nCards;
+                }
+            }
+
+            public class MoveEventArgs : EventArgs
+            {
+                public string Playername;
+
+                public MoveEventArgs(string playername)
+                {
+                    Playername = playername;
+                }
+            }
+
+            public class WinEventArgs : EventArgs
+            {
+                public string name;
+                public int points;
+                public WinEventArgs(string name, int points)
+                {
+                    this.name = name;
+                    this.points = points;
+                }
+                public WinEventArgs(string name) : this(name, 0) { }
             }
         }
 
-        public class WinEventArgs : EventArgs
-        {
-            public string name;
-            public int points;
-            public WinEventArgs(string name, int points)
-            {
-                this.name = name;
-                this.points = points;
-            }
-            public WinEventArgs(string name) : this(name, 0) { }
-        }
     }
 }

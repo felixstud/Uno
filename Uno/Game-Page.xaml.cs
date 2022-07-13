@@ -38,6 +38,9 @@ namespace Uno
             this.init();
         }
 
+        /// <summary>
+        /// Initialization for GamePage
+        /// </summary>
         private async void init()
         {
             GameClient.Events.CardReceived += Events_CardReceived;
@@ -47,7 +50,7 @@ namespace Uno
 
             while (!GameClient.client.IsConnected) ;
             GameClient.RequestServer("?card?" + Globals.initialCards.ToString());
-            while (GameClient.myCards.getCounter() < Globals.initialCards) ;
+            while (GameClient.myCards.Count() < Globals.initialCards) ;
             await Task.Delay(500);
             GameClient.RequestServer("?midcard?");
             while (MiddleStack.Content == "") ;
@@ -59,7 +62,12 @@ namespace Uno
             //GameClient.RequestServer("?move?"); //Crashes the Game ?!?!?
         }
 
-        private void Events_WinnerReceived(object? sender, GameClient.WinEventArgs e)
+        /// <summary>
+        /// Fired when one Player wins the Game
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Events_WinnerReceived(object? sender, GameClient.Events.WinEventArgs e)
         {
             this.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -70,7 +78,12 @@ namespace Uno
             }));
         }
 
-        private void Events_MoveReceived(object? sender, GameClient.MoveEventArgs e)
+        /// <summary>
+        /// Fired when a Player ended his move
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Events_MoveReceived(object? sender, GameClient.Events.MoveEventArgs e)
         {
             if(e.Playername.Equals(GameClient.myName))
             {
@@ -84,7 +97,12 @@ namespace Uno
             }
         }
 
-        private void Events_EnemyPlayerNameReceived(object? sender, GameClient.EnemyNameReceivedEventArgs e)
+        /// <summary>
+        /// Fired when Client receives a Players name
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Events_EnemyPlayerNameReceived(object? sender, GameClient.Events.EnemyNameReceivedEventArgs e)
         {
             if(e.Playernumber < 0)
             {
@@ -113,7 +131,12 @@ namespace Uno
             }
         }
 
-        private void Events_CardReceived(object? sender, GameClient.CardReceivedEventArgs e)
+        /// <summary>
+        /// Fired when Client received a Card from Server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Events_CardReceived(object? sender, GameClient.Events.CardReceivedEventArgs e)
         {
             if (e.midcard == true)
             {
@@ -127,6 +150,10 @@ namespace Uno
             ShowOwnCards();
         }
 
+        /// <summary>
+        /// Activates or deactivates all Card Labels, and Buttons
+        /// </summary>
+        /// <param name="activate"></param>
         private void Move(bool activate)
         {
             foreach (Label L in CardLabels)
@@ -137,6 +164,10 @@ namespace Uno
             btn_SayUno.Dispatcher.BeginInvoke(new Action(() => { btn_SayUno.IsEnabled = activate; }));
         }
 
+        /// <summary>
+        /// Marks the Player with a specific Name
+        /// </summary>
+        /// <param name="Name">Players name to get marked</param>
         private void MarkActivePlayer(string Name)
         {
             foreach(Label L in NameLabels)
@@ -151,6 +182,9 @@ namespace Uno
             }
         }
 
+        /// <summary>
+        /// Initializes all Labels
+        /// </summary>
         private void initializeLabels()
         {
             CardLabels = new List<Label>();
@@ -191,12 +225,15 @@ namespace Uno
             CountLabels.Add(lab_Player3_Number);
         }
 
+        /// <summary>
+        /// Shows every Card which are existing in own cards
+        /// </summary>
         private void ShowOwnCards()
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
             for(int i = 0; i < CardLabels.Count(); i++)
             {
-                if(i < GameClient.myCards.getCounter())
+                if(i < GameClient.myCards.Count())
                 {
                     ShowCard(CardLabels[i], GameClient.myCards.Cards[i]);
                 }
@@ -207,16 +244,25 @@ namespace Uno
             }
         }
 
+        /// <summary>
+        /// Hides a specific Label and resets its content and Background
+        /// </summary>
+        /// <param name="L">Label to hide</param>
         private void HideCard(Label L)
         {
             L.Dispatcher.BeginInvoke(new Action(() =>
             {
-                L.Content = "FU";
+                L.Content = "";
                 L.Background = Brushes.White;
                 L.Visibility = Visibility.Hidden;
             }));
         }
 
+        /// <summary>
+        /// Shows specific Card on an specific Label
+        /// </summary>
+        /// <param name="L">Label that the Card be displayed at</param>
+        /// <param name="C">Card to be displayed</param>
         private void ShowCard(Label L, Card C)
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
@@ -229,6 +275,11 @@ namespace Uno
             }));
         }
 
+        /// <summary>
+        /// Fired when a card is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void onCardClick(object sender, MouseButtonEventArgs e)
         {
             this.Move(false);
@@ -242,6 +293,11 @@ namespace Uno
             }
         }//ToDo
 
+        /// <summary>
+        /// Converts a CardLabel to an actual Card
+        /// </summary>
+        /// <param name="L">Label to convert</param>
+        /// <returns></returns>
         private Card LabelToCard(Label L)
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
@@ -256,12 +312,22 @@ namespace Uno
             return null;
         }
 
+        /// <summary>
+        /// Fired when Button "new Card" is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btn_newCard_Click(object sender, RoutedEventArgs e)
         {
             btn_newCard.Dispatcher.BeginInvoke(new Action(() => { btn_newCard.IsEnabled = false; }));
             GameClient.RequestServer("?card?");
         }
 
+        /// <summary>
+        /// Fired when "Exit" Button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btn_Exit_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult result = MessageBox.Show("Sure you want to Exit?", "Exit?", MessageBoxButton.YesNo, MessageBoxImage.Warning);

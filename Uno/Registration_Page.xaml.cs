@@ -31,11 +31,6 @@ namespace Uno
             this.NavigationService.Navigate(new Start_Screen());
         }
 
-        private void inputName_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            
-        }
-
         private void btnNewGame_Click(object sender, RoutedEventArgs e)
         {
             GameClient.myName = inputName.Text;
