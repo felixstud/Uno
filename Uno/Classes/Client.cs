@@ -78,7 +78,7 @@ namespace Uno.Classes
                     }
                     else
                     {
-                        num += msg[0];
+                        num += msg[0] - 48;
                         msg = msg.Remove(0, 1);
                     }
                 }

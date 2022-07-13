@@ -182,22 +182,22 @@ namespace Uno.Classes
                 else if(msg.Contains("!card!"))
                 {
                     Card c = new Card(msg[6] - 48, msg[7] - 48);
-                    /*if(!checkMovePossibility(c.number, c.color))
+                    if(!checkMovePossibility(c.number, c.color))
                     {
                         serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                         return;
-                    }*/
+                    }
                     if(AllPlayers[activePlayer].CardStack.RemoveCard(c) == null)
                     {
                         serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                         return;
                     }
                     MiddleStack.AddCard(c);
-                    await Task.Delay(500);
-                    serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.getCounter().ToString() + "." + AllPlayers[activePlayer].Name);
-                    await Task.Delay(500);
+                    await Task.Delay(100);
                     serverBroadcast("!midcard!" + msg.Remove(0, 6));
-                    await Task.Delay(500);
+                    await Task.Delay(100);
+                    serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.getCounter().ToString() + "." + AllPlayers[activePlayer].Name);
+                    await Task.Delay(100);
                     if (AllPlayers[activePlayer].CardStack.getCounter() <= 0)
                     {
                         serverBroadcast("!win!" + AllPlayers[activePlayer].Name);
@@ -207,7 +207,7 @@ namespace Uno.Classes
                     if (activePlayer >= Globals.MaxPlayers)
                         activePlayer = 0;
                     serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
-                    await Task.Delay(500);
+                    await Task.Delay(100);
                     server.Send(ipport, "!remcard!" + msg.Remove(0, 6));
                 }
                 else if(msg.Contains("?midcard?"))

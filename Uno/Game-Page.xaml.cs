@@ -88,7 +88,7 @@ namespace Uno
         {
             if(e.Playernumber < 0)
             {
-                for(int i = 0; i < Globals.MaxPlayers - 2; i++)
+                for(int i = 0; i < (Globals.MaxPlayers - 2); i++)
                 {
                     NameLabels[i].Dispatcher.BeginInvoke(new Action(() =>
                     {
