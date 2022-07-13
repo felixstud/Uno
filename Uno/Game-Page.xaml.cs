@@ -172,7 +172,7 @@ namespace Uno
             foreach (Label L in CardLabels)
             {
                 L.Visibility = Visibility.Hidden;
-                L.Width = 50;
+                L.Width = 48;
                 L.Height = 90;
                 L.HorizontalContentAlignment = HorizontalAlignment.Center;
                 L.VerticalContentAlignment = VerticalAlignment.Center;
@@ -194,7 +194,7 @@ namespace Uno
         private void ShowOwnCards()
         {
             var lcolor = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow };
-            for(int i = 0; i < CardLabels.Count() - 1; i++)
+            for(int i = 0; i < CardLabels.Count(); i++)
             {
                 if(i < GameClient.myCards.getCounter())
                 {
@@ -270,6 +270,6 @@ namespace Uno
                 GameServer.Stop();
                 GameClient.Stop();
             }
-        }//ToDo
+        }
     }
 }
