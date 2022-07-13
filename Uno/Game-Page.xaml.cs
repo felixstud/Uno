@@ -210,7 +210,7 @@ namespace Uno
                 L.Height = 90;
                 L.HorizontalContentAlignment = HorizontalAlignment.Center;
                 L.VerticalContentAlignment = VerticalAlignment.Center;
-                L.FontSize = 30;
+                L.FontSize = 50;
                 L.Margin = new Thickness(1);
             }
 
@@ -335,6 +335,7 @@ namespace Uno
             {
                 GameServer.Stop();
                 GameClient.Stop();
+                this.NavigationService.Navigate(new Start_Screen());
             }
         }
     }

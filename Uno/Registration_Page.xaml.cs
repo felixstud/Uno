@@ -34,7 +34,11 @@ namespace Uno
         private void btnNewGame_Click(object sender, RoutedEventArgs e)
         {
             GameClient.myName = inputName.Text;
-            this.NavigationService.Navigate(new Waiting_Page());
+            bool serve = false;
+            if (checkbx_Server.IsChecked == true)
+                serve = true;
+
+            this.NavigationService.Navigate(new Waiting_Page(serve));
         }
     }
 }

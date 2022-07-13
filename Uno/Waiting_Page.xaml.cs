@@ -25,9 +25,11 @@ namespace Uno
 
     public partial class Waiting_Page : Page
     {
-        public Waiting_Page()
+        bool server;
+        public Waiting_Page(bool server)
         {
             InitializeComponent();
+            this.server = server;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -35,12 +37,11 @@ namespace Uno
             GameClient.Events.StatusChanged += Events_StatusChanged;
             GameClient.Events.ConnectionCounterChanged += Events_ConnectionCounterChanged;
             GameClient.client.Events.Connected += Events_Connected;
-            if (!GameClient.find_server())
-            {
-                if (GameServer.StartServer())
+            if(server)
+                if (GameServer.StartServer(Globals.getIPPort()))
                     update_status("New Server created");
-                GameClient.find_server();
-            }
+            if (!GameClient.find_server(Globals.getIPPort()))
+                update_status("Could not find a Server, please try again");
         }
 
         /// <summary>

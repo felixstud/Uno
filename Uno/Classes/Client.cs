@@ -12,13 +12,13 @@ namespace Uno.Classes
     {
         public static string myName;
         public static CardStack myCards = new CardStack();
-        public static SimpleTcpClient client = new SimpleTcpClient(Globals.ipport);
+        public static SimpleTcpClient client = new SimpleTcpClient(Globals.getIPPort());
 
         /// <summary>
         /// Try to find a Server with globally defined Ip & Port
         /// </summary>
         /// <returns>True if a Server was found and is connection was successfull</returns>
-        public static bool find_server()
+        public static bool find_server(string ipport)
         {
             try
             { client.Connect(); }

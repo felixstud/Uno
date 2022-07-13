@@ -21,12 +21,13 @@ namespace Uno.Classes
         /// <summary>
         /// starts a new server with global definded IP and Port
         /// </summary>
+        /// <param name="ipport">ipport string to start the server with</param>
         /// <returns>
         /// true if start was successfull
         /// </returns>
-        static public bool StartServer()
+        static public bool StartServer(string ipport)
         {
-            server = new SimpleTcpServer(Globals.ipport);
+            server = new SimpleTcpServer(ipport);
             server.Events.ClientConnected += Events_ClientConnected;
             server.Events.ClientDisconnected += Events_ClientDisconnected;
             server.Events.DataReceived += Events_DataReceived;
@@ -66,9 +67,12 @@ namespace Uno.Classes
         /// <param name="e"></param>
         private static void Events_ClientDisconnected(object? sender, ConnectionEventArgs e)
         {
-            serverBroadcast("!counter!" + AllPlayers.Count().ToString());
-            removePlayer(e.IpPort);
-            server.DisconnectClient(e.IpPort);
+            if (server != null)
+            {
+                serverBroadcast("!counter!" + AllPlayers.Count().ToString());
+                removePlayer(e.IpPort);
+                server.DisconnectClient(e.IpPort);
+            }
         }
         /// <summary>
         /// Event which is triggerred, when a new client connected to the server
@@ -110,11 +114,15 @@ namespace Uno.Classes
         public static void Stop()
         {
             if (server != null)
+            {
                 if (server.IsListening)
                     server.Stop();
-            server = null;
-            AllPlayers.Clear();
-            AllCards.Cards.Clear();
+                server = null;
+            }
+            if(AllPlayers != null)
+                AllPlayers.Clear();
+            if(AllCards != null)
+                AllCards.Cards.Clear();
         }
         /// <summary>
         /// Generates all necessary components to start a new game
