@@ -171,16 +171,28 @@ namespace Uno.Classes
                         await server.SendAsync(ipport, m);
                         await Task.Delay(300);
                     }
+                    if(num == 1)
+                    {
+                        activePlayer++;
+                        if (activePlayer >= Globals.MaxPlayers)
+                            activePlayer = 0;
+                        serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
+                    }
                 }
                 else if(msg.Contains("!card!"))
                 {
                     Card c = new Card(msg[6] - 48, msg[7] - 48);
-                    MiddleStack.AddCard(c);
+                    if(!checkMovePossibility(c.number, c.color))
+                    {
+                        serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
+                        return;
+                    }
                     if(AllPlayers[activePlayer].CardStack.RemoveCard(c) == null)
                     {
                         serverBroadcast("!move!" + AllPlayers[activePlayer].Name);
                         return;
                     }
+                    MiddleStack.AddCard(c);
                     await Task.Delay(500);
                     serverBroadcast("!numCard!" + AllPlayers[activePlayer].CardStack.getCounter().ToString() + "." + AllPlayers[activePlayer].Name);
                     activePlayer++;
@@ -233,7 +245,15 @@ namespace Uno.Classes
             }
             return name;
         }
-
+            private bool checkMovePossibility(int number, int color)
+            {
+                if (MiddleStack.Cards.Last().number == number) 
+                    return true;
+                else if (MiddleStack.Cards.Last().color == color)
+                    return true;
+                else
+                    return false;
+            }
         }
     }
 }
